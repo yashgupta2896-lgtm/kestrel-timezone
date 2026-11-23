@@ -50,7 +50,8 @@
   .field{margin-bottom:14px}
   .field b{display:block;font-size:13.5px;margin-bottom:5px}
   .fieldnote{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.45}
-  .fieldnote .demo{color:#A9B0C2}
+  .setval{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:#F7F8FB;font:600 14px Inter;color:var(--ink)}
+  .setval .lock{font:600 11px Inter;color:var(--muted)}
   select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:500 14px Inter;color:var(--ink);background:#fff;appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7391' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
   .clockbox{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#FBFCFE;margin-top:4px}
@@ -166,8 +167,8 @@
       </div>
       <div class="field">
         <b>Maya's timezone</b>
-        <select id="hostTz"></select>
-        <div class="fieldnote">Set once in Maya's account — invitees never see or change this. <span class="demo">(editable here only so you can preview other host zones)</span></div>
+        <div class="setval">New York · EST<span class="lock">🔒 from account settings</span></div>
+        <div class="fieldnote">Set once in Maya's account — invitees never see or change it. Kestrel converts into each invitee's own zone automatically.</div>
       </div>
       <div class="lab">Availability</div>
       <div class="field" style="margin-bottom:8px">
@@ -311,9 +312,8 @@
       if(z[0]===val)o.selected=true;sel.appendChild(o);
     });
   }
-  var hostSel=document.getElementById("hostTz"), invSel=document.getElementById("invTz");
-  fill(hostSel,host); fill(invSel,inv);
-  hostSel.onchange=function(){host=this.value;render();};
+  var invSel=document.getElementById("invTz");          // host zone is a fixed account setting; only the invitee's zone is interactive
+  fill(invSel,inv);
   invSel.onchange=function(){inv=this.value;render();};
   document.getElementById("hours").onchange=function(){var p=this.value.split("-");hoursStart=+p[0];hoursEnd=+p[1];render();};
 
