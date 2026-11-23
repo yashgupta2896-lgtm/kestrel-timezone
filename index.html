@@ -49,6 +49,8 @@
   .lab{font:700 11px Inter;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
   .field{margin-bottom:14px}
   .field b{display:block;font-size:13.5px;margin-bottom:5px}
+  .fieldnote{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.45}
+  .fieldnote .demo{color:#A9B0C2}
   select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:500 14px Inter;color:var(--ink);background:#fff;appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7391' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
   .clockbox{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#FBFCFE;margin-top:4px}
@@ -156,7 +158,7 @@
 <div class="wrap grid">
   <!-- HOST -->
   <section class="card" aria-label="Host setup">
-    <div class="hd"><span class="tag host">You · host</span><h2>Meeting type</h2></div>
+    <div class="hd"><span class="tag host">Host settings</span><h2>Meeting type</h2></div>
     <div class="bd">
       <div class="mt">
         <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4.5" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M8 2.5v4M16 2.5v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
@@ -165,6 +167,7 @@
       <div class="field">
         <b>Maya's timezone</b>
         <select id="hostTz"></select>
+        <div class="fieldnote">Set once in Maya's account — invitees never see or change this. <span class="demo">(editable here only so you can preview other host zones)</span></div>
       </div>
       <div class="lab">Availability</div>
       <div class="field" style="margin-bottom:8px">
