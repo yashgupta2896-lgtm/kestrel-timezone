@@ -34,8 +34,8 @@
   .intro .quote{margin-top:14px;display:inline-flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-left:3px solid var(--red);border-radius:12px;padding:10px 14px;font-size:13.5px;color:var(--ink-2);max-width:780px;box-shadow:var(--shadow)}
   .quote .q{color:var(--red);font:800 18px "Plus Jakarta Sans";line-height:1}
 
-  .grid{display:grid;grid-template-columns:360px 1fr;gap:22px;align-items:start;padding:22px 0 40px}
-  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  [hidden]{display:none!important}
+  .grid{display:grid;grid-template-columns:1fr;gap:22px;align-items:start;padding:22px 0 40px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
   .card .hd{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
   .card .bd{padding:18px}
@@ -190,8 +190,8 @@
 <div id="bookingView" hidden>
 <div class="wrap"><a class="backlink" id="backBtn">← All people</a></div>
 <div class="wrap grid">
-  <!-- HOST -->
-  <section class="card" aria-label="Host setup">
+  <!-- HOST (host-side config — not shown on the invitee's booking screen) -->
+  <section class="card" aria-label="Host setup" hidden>
     <div class="hd"><span class="tag host">Host settings</span><h2>Meeting type</h2></div>
     <div class="bd">
       <div class="mt">
