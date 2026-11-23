@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Kestrel · Timezone-safe booking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#161B2E; --ink-2:#3A4260; --muted:#6B7391; --line:#E7EAF2;
+    --bg:#F6F7FB; --card:#FFFFFF; --indigo:#4B5BD6; --indigo-ink:#2E3AA3;
+    --teal:#10B3A3; --teal-ink:#0C8577; --teal-soft:#E6F7F4;
+    --amber:#E79A2B; --amber-soft:#FCF0DC; --amber-line:#F0C98A;
+    --red:#D45B6A; --red-soft:#FBE9EB; --radius:16px;
+    --shadow:0 1px 2px rgba(22,27,46,.04),0 10px 30px rgba(22,27,46,.06);
+    color-scheme:light;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5;-webkit-font-smoothing:antialiased}
+  h1,h2,h3,.wm{font-family:"Plus Jakarta Sans",Inter,sans-serif}
+  .wrap{max-width:1180px;margin:0 auto;padding-inline:20px}
+  header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0);z-index:20}
+  .bar{display:flex;align-items:center;gap:12px;padding-block:14px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.01em}
+  .logo .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(145deg,var(--indigo),#6E7CE8);display:grid;place-items:center;box-shadow:0 4px 12px rgba(75,91,214,.35)}
+  .pill{margin-left:6px;font:600 12px Inter;color:var(--indigo-ink);background:#EEF0FD;border:1px solid #DDE1FA;padding:4px 10px;border-radius:999px}
+  .spacer{flex:1}.ship{font:600 12.5px Inter;color:var(--muted)}.ship b{color:var(--teal-ink)}
+
+  .intro{padding:26px 0 6px}
+  .intro h1{margin:0 0 6px;font-size:27px;letter-spacing:-.02em}
+  .intro p{margin:0;color:var(--ink-2);max-width:780px;font-size:15px}
+  .intro .quote{margin-top:14px;display:inline-flex;gap:10px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-left:3px solid var(--red);border-radius:12px;padding:10px 14px;font-size:13.5px;color:var(--ink-2);max-width:780px;box-shadow:var(--shadow)}
+  .quote .q{color:var(--red);font:800 18px "Plus Jakarta Sans";line-height:1}
+
+  .grid{display:grid;grid-template-columns:360px 1fr;gap:22px;align-items:start;padding:22px 0 40px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card .hd{padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .card .bd{padding:18px}
+  .card .hd h2{margin:0;font-size:16px}
+  .tag{font:700 10px Inter;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:6px}
+  .tag.host{background:#EEF0FD;color:var(--indigo-ink)}.tag.inv{background:var(--teal-soft);color:var(--teal-ink)}
+
+  .mt{display:flex;align-items:center;gap:12px;padding:12px;border:1px solid var(--line);border-radius:12px;background:#FBFCFE;margin-bottom:16px}
+  .mt .ic{width:38px;height:38px;border-radius:10px;background:var(--teal-soft);display:grid;place-items:center;color:var(--teal-ink)}
+  .mt b{font-size:14.5px}.mt span{color:var(--muted);font-size:12.5px}
+  .lab{font:700 11px Inter;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+  .field{margin-bottom:14px}
+  .field b{display:block;font-size:13.5px;margin-bottom:5px}
+  select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font:500 14px Inter;color:var(--ink);background:#fff;appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236B7391' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer}
+  .clockbox{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#FBFCFE;margin-top:4px}
+  .clockbox .r{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:4px 0}
+  .clockbox .r span{color:var(--muted)}.clockbox .r b{font-weight:600}
+  .badge{display:inline-flex;align-items:center;gap:6px;font:600 12px Inter;color:var(--teal-ink);background:var(--teal-soft);border:1px solid #BFE9E2;padding:6px 10px;border-radius:999px;margin-top:12px}
+
+  .bkhead{display:flex;align-items:center;gap:13px;margin-bottom:12px}
+  .bkhead .av{width:44px;height:44px;border-radius:12px;background:linear-gradient(145deg,#2E3AA3,#4B5BD6);color:#fff;display:grid;place-items:center;font:800 16px "Plus Jakarta Sans"}
+  .bkhead b{font-size:16px}.bkhead span{color:var(--muted);font-size:13px}
+  .tzbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#F4F6FC;border:1px solid var(--line);border-radius:13px;padding:11px 15px;margin-bottom:16px}
+  .tzbar .side{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-2)}
+  .tzbar .mut{color:var(--muted)}
+  .tzbar .side b{color:var(--ink);font-weight:700}
+  .tzbar .swap{color:var(--muted);font-size:15px;margin:0 -2px}
+  .tzsel{width:auto;min-width:148px;padding:7px 30px 7px 11px;font-size:13px;font-weight:600;color:var(--indigo-ink);background-color:#fff}
+  .tzbar .auto{font:700 9.5px Inter;letter-spacing:.05em;text-transform:uppercase;color:var(--teal-ink);background:var(--teal-soft);border:1px solid #BFE9E2;padding:3px 7px;border-radius:999px}
+  .daynav{font-weight:700;font-size:15px;margin:2px 0 14px}
+  .empty{padding:22px 14px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--line);border-radius:12px}
+  .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .slot{border:1.5px solid var(--teal);border-radius:12px;padding:11px 12px;cursor:pointer;transition:.14s;background:#fff;text-align:left}
+  .slot:hover{background:var(--teal-soft)}
+  .slot .big{font:700 15px Inter;color:var(--teal-ink)}
+  .slot .big .z{font:600 11px Inter;color:var(--muted);margin-left:5px}
+  .slot .big .nd{display:inline-block;font:700 10px Inter;color:#9A6A12;background:var(--amber-soft);border:1px solid var(--amber-line);padding:1px 6px;border-radius:999px;margin-left:6px;vertical-align:1px}
+  .slot .sub{font-size:11.5px;color:var(--muted);margin-top:3px}
+  .foothint{margin-top:14px;font-size:12.5px;color:var(--muted)}
+
+  .confirm{display:none}.confirm.show{display:block;text-align:center}
+  .check{width:54px;height:54px;border-radius:50%;background:var(--teal-soft);color:var(--teal-ink);display:grid;place-items:center;margin:4px auto 12px}
+  .confirm h3{margin:0 0 4px;font-size:19px}.confirm p{margin:0;color:var(--ink-2);font-size:14px}
+  .rcpt{margin:16px auto 10px;max-width:420px;text-align:left;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .rcpt .r{display:flex;justify-content:space-between;gap:14px;padding:12px 14px;font-size:13.5px;border-bottom:1px solid var(--line)}
+  .rcpt .r:last-child{border-bottom:0}.rcpt .r span{color:var(--muted)}.rcpt .r b{font-weight:600;text-align:right}
+  .rcpt .r.hi{background:var(--teal-soft)}
+  .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:11px;padding:11px 18px;font:600 14px Inter;cursor:pointer}
+  .btn.ghost{background:#F1F3F9;color:var(--ink-2)}.btn.ghost:hover{background:#E9ECF5}
+
+  /* DST proof */
+  .dst{margin:0 0 50px}
+  .dst .card .bd{padding:18px 20px 22px}
+  .dsthead{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+  .dsthead h2{margin:0;font-size:17px}
+  .dstsub{color:var(--ink-2);font-size:14px;margin:0 0 18px;max-width:760px}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:700px){.cmp{grid-template-columns:1fr}}
+  .way{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .way .wh{padding:12px 15px;font:700 13.5px Inter;display:flex;align-items:center;gap:8px}
+  .way.bad .wh{background:var(--red-soft);color:#A33442}.way.good .wh{background:var(--teal-soft);color:var(--teal-ink)}
+  .way .wb{padding:6px 15px 14px}
+  .wrow{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px dashed var(--line);font-size:13.5px}
+  .wrow:last-child{border-bottom:0}
+  .wrow .d{color:var(--muted)}.wrow .t{font-weight:600}
+  .wrow .t.shift{color:var(--red)}.wrow .t.ok{color:var(--teal-ink)}
+  .verdict{margin-top:12px;font-size:12.5px;color:var(--ink-2)}
+  .verdict b{color:var(--ink)}
+  /* meeting check */
+  .mrow{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border:1px solid var(--line);border-radius:13px;margin-bottom:10px;background:#fff}
+  .mrow.warn{border-color:var(--amber-line);background:#FFFDF7}
+  .mrow.ok{border-color:#CBEBE4;background:#FbFEFD}
+  .mrow .st{flex:none;display:inline-flex;align-items:center;gap:6px;font:700 11px Inter;padding:5px 9px;border-radius:999px;margin-top:2px;white-space:nowrap}
+  .mrow.warn .st{background:var(--amber-soft);color:#9A6A12;border:1px solid var(--amber-line)}
+  .mrow.ok .st{background:var(--teal-soft);color:var(--teal-ink);border:1px solid #BFE9E2}
+  .mrow .info{flex:1;min-width:0}
+  .mrow .info .ttl{font-weight:700;font-size:14.5px}
+  .mrow .info .meta{font-size:12.5px;color:var(--muted);margin-top:1px}
+  .mrow .info .reason{font-size:13px;color:var(--ink-2);margin-top:7px}
+  .mrow .info .reason b{color:var(--ink)}
+  .mrow .act{flex:none;align-self:center}
+  .mrow .fix{border:0;border-radius:9px;padding:9px 13px;font:600 12.5px Inter;background:var(--indigo);color:#fff;cursor:pointer}
+  .mrow .fix:hover{background:var(--indigo-ink)}
+  .mrow .done{font:600 12.5px Inter;color:var(--teal-ink)}
+  .checkbar{display:flex;align-items:center;gap:10px;margin:2px 0 16px;font-size:13px}
+  .checkbar .n{font:800 15px "Plus Jakarta Sans"}.checkbar .warn{color:#9A6A12}.checkbar .ok{color:var(--teal-ink)}
+  @media(max-width:460px){
+    .bar{flex-wrap:nowrap}
+    .pill{font-size:11px;padding:3px 9px;white-space:nowrap;margin-left:4px}
+    .ship{display:none}
+    .intro h1{font-size:23px}
+    .tzbar .swap{display:none}
+  }
+  footer{border-top:1px solid var(--line);background:#fff;color:var(--muted);font-size:12.5px}
+  footer .wrap{padding:16px 20px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <div class="logo">
+      <span class="mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2.5c2.3 3.1 5.4 4.2 8.5 4.6-1.1 6.9-4.4 10.8-8.5 14.4C7.9 17.9 4.6 14 3.5 7.1 6.6 6.7 9.7 5.6 12 2.5Z" fill="#fff"/><path d="M12 7.5v8.3M8.6 10.3 12 12.4l3.4-2.1" stroke="#4B5BD6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      Kestrel
+    </div>
+    <span class="pill">Timezone-safe booking</span>
+    <div class="spacer"></div>
+    <span class="ship">Prototype · <b>sprint candidate</b></span>
+  </div>
+</header>
+
+<div class="wrap intro">
+  <h1>The right time, in everyone's timezone</h1>
+  <p>Every meeting is now anchored to one <b>exact moment</b> and shown in each person's own timezone — host and invitee. It stays correct across daylight-saving changes, so nobody shows up an hour off again.</p>
+  <div class="quote"><span class="q">“</span><span>Why this: <b>“Booked for 2pm, calendar says 1pm — which one is right?”</b> · “Customer showed up an hour early, says that's what the email told them.” · “Daylight saving broke our Monday bookings again.” · “Could the booking page just show the timezone?”</span></div>
+</div>
+
+<div class="wrap grid">
+  <!-- HOST -->
+  <section class="card" aria-label="Host setup">
+    <div class="hd"><span class="tag host">You · host</span><h2>Meeting type</h2></div>
+    <div class="bd">
+      <div class="mt">
+        <div class="ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4.5" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M8 2.5v4M16 2.5v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        <div><b>Intro call with Maya Raman</b><br><span>30 min · one-on-one</span></div>
+      </div>
+      <div class="field">
+        <b>Maya's timezone</b>
+        <select id="hostTz"></select>
+      </div>
+      <div class="lab">Availability</div>
+      <div class="field" style="margin-bottom:8px">
+        <b>Working hours (Maya's local time)</b>
+        <select id="hours">
+          <option value="9-17" selected>9:00 AM – 5:00 PM</option>
+          <option value="8-16">8:00 AM – 4:00 PM</option>
+          <option value="10-18">10:00 AM – 6:00 PM</option>
+        </select>
+      </div>
+      <div class="clockbox">
+        <div class="r"><span>Every booking is stored as</span><b>an exact moment + zone</b></div>
+      </div>
+      <div class="badge">✓ DST-safe — anchored to the moment, not a clock reading</div>
+    </div>
+  </section>
+
+  <!-- INVITEE -->
+  <section class="card" aria-label="Booking page">
+    <div class="hd"><span class="tag inv">Invitee · live booking page</span><h2>What people see when they book you</h2></div>
+    <div class="bd">
+      <div id="picker">
+        <div class="bkhead">
+          <div class="av">MR</div>
+          <div><b>Intro call with Maya Raman</b><br><span>30 min · video · hosted on Kestrel</span></div>
+        </div>
+        <div class="tzbar">
+          <div class="side"><span class="mut">You're booking in</span>
+            <select id="invTz" class="tzsel"></select>
+            <span class="auto" id="autoTag">auto-detected</span>
+          </div>
+          <span class="swap" aria-hidden="true">↔</span>
+          <div class="side"><span class="mut">Maya is in</span> <b id="hostZoneLabel">New York · EST</b></div>
+        </div>
+        <div class="daynav" id="dayLabel">Thursday, 26 November 2026</div>
+        <div class="slots" id="slots"></div>
+        <div class="foothint" id="hint"></div>
+      </div>
+
+      <div class="confirm" id="confirm">
+        <div class="check"><svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4 10-11" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <h3>You're booked</h3>
+        <p id="confSub">Everyone gets the same moment, written in their own timezone.</p>
+        <div class="rcpt" id="rcpt"></div>
+        <button class="btn ghost" id="again">← Pick another time</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- MEETING CHECK -->
+<div class="wrap" style="padding-bottom:8px">
+  <section class="card">
+    <div class="bd">
+      <div class="dsthead">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="#4B5BD6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="#4B5BD6" stroke-width="1.7"/></svg>
+        <h2>Check meetings already on the books</h2>
+      </div>
+      <p class="dstsub">New bookings are safe by design. But meetings created the old way can still be wrong. Kestrel audits each upcoming meeting and flags anything that will drift on a daylight-saving change or was saved without a timezone — so you can re-anchor it before a customer shows up at the wrong time.</p>
+      <div class="checkbar" id="checkBar"></div>
+      <div id="checkList"></div>
+    </div>
+  </section>
+</div>
+
+<!-- DST PROOF -->
+<div class="wrap dst">
+  <section class="card">
+    <div class="bd">
+      <div class="dsthead">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#E79A2B" stroke-width="1.7"/><path d="M12 7v5l3 2" stroke="#E79A2B" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <h2>Why Monday meetings used to “move by an hour”</h2>
+      </div>
+      <p class="dstsub">Maya runs a weekly Monday meeting at <b>10:00 AM New York time</b>. US daylight saving ended <b>Sunday, 2 Nov 2026</b>. Here's the same meeting the week before and the week after — the old way vs anchored-to-the-moment. Watch the invitee's time.</p>
+      <div class="cmp" id="cmp"></div>
+    </div>
+  </section>
+</div>
+
+<footer><div class="wrap">
+  <span>Kestrel · fictional scheduling tool · timezone-safe booking prototype</span>
+  <span>Built by Yash Gupta for the Founder's Office Build Challenge</span>
+</div></footer>
+
+<script>
+(function(){
+  var DUR=30;
+  var ZONES=[
+    ["America/New_York","New York","EST"],
+    ["America/Los_Angeles","Los Angeles","PST"],
+    ["America/Chicago","Chicago","CST"],
+    ["Europe/London","London","GMT"],
+    ["Europe/Berlin","Berlin","CET"],
+    ["Asia/Kolkata","Kolkata","IST"],
+    ["Asia/Singapore","Singapore","SGT"],
+    ["Asia/Tokyo","Tokyo","JST"],
+    ["Australia/Sydney","Sydney","AEDT"]
+  ];
+  var ABBR={"Asia/Kolkata":"IST","Asia/Calcutta":"IST","Asia/Singapore":"SGT","Asia/Tokyo":"JST","Asia/Dubai":"GST","Asia/Shanghai":"CST","Asia/Hong_Kong":"HKT","Asia/Dhaka":"BST","Asia/Karachi":"PKT"};
+  var DATE={y:2026,m:11,d:26};              // Thu 26 Nov 2026
+  var host="America/New_York";
+  var inv=(Intl.DateTimeFormat().resolvedOptions().timeZone)||"Europe/London";
+  if(inv==="Asia/Calcutta") inv="Asia/Kolkata";   // normalise legacy alias
+  if(!ZONES.some(function(z){return z[0]===inv;})) ZONES.unshift([inv, inv.split("/").pop().replace(/_/g," "), ABBR[inv]||"local"]);
+  var hoursStart=9, hoursEnd=17;
+
+  // ---- timezone math (real DST via Intl) ----
+  function tzOffsetMin(ts,tz){
+    var d=new Date(ts);
+    var s=new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit"}).format(d);
+    var mm=s.match(/(\d+)\/(\d+)\/(\d+),?\s+(\d+):(\d+):(\d+)/);
+    var asUTC=Date.UTC(+mm[3],+mm[1]-1,+mm[2],+mm[4]%24,+mm[5],+mm[6]);
+    return Math.round((asUTC-d.getTime())/60000);
+  }
+  // wall time (y,mo,da,hh,mm) in zone tz -> absolute Date (DST-correct)
+  function wallToInstant(y,mo,da,hh,mm,tz){
+    var guess=Date.UTC(y,mo-1,da,hh,mm);
+    var off=tzOffsetMin(guess,tz);
+    var inst=guess-off*60000;
+    var off2=tzOffsetMin(inst,tz);
+    if(off2!==off) inst=guess-off2*60000;
+    return new Date(inst);
+  }
+  function fmt(ts,tz,opt){
+    return new Intl.DateTimeFormat("en-US",Object.assign({timeZone:tz,hour:"numeric",minute:"2-digit",hour12:true},opt||{})).format(ts);
+  }
+  function zoneName(ts,tz){
+    if(ABBR[tz]) return ABBR[tz];
+    var p=new Intl.DateTimeFormat("en-US",{timeZone:tz,timeZoneName:"short"}).formatToParts(ts).find(function(x){return x.type==="timeZoneName";});
+    var v=p?p.value:"";
+    return /^GMT[+-]/.test(v)?v.replace("GMT","UTC"):v;   // tidy any raw offset fallbacks
+  }
+  function label(tz){var z=ZONES.find(function(x){return x[0]===tz;});return z?z[1]:tz;}
+  function dateKey(ts,tz){return new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(ts);}
+
+  // ---- populate selects ----
+  function fill(sel,val){
+    sel.innerHTML="";
+    ZONES.forEach(function(z){
+      var o=document.createElement("option");o.value=z[0];o.textContent=z[1]+" · "+z[2];
+      if(z[0]===val)o.selected=true;sel.appendChild(o);
+    });
+  }
+  var hostSel=document.getElementById("hostTz"), invSel=document.getElementById("invTz");
+  fill(hostSel,host); fill(invSel,inv);
+  hostSel.onchange=function(){host=this.value;render();};
+  invSel.onchange=function(){inv=this.value;render();};
+  document.getElementById("hours").onchange=function(){var p=this.value.split("-");hoursStart=+p[0];hoursEnd=+p[1];render();};
+
+  // ---- render booking page ----
+  function render(){
+    var dref0=wallToInstant(DATE.y,DATE.m,DATE.d,12,0,host);
+    // one place for timezone context: the bar
+    document.getElementById("hostZoneLabel").textContent=label(host)+" · "+zoneName(dref0,host);
+    var det=(Intl.DateTimeFormat().resolvedOptions().timeZone||"").replace("Asia/Calcutta","Asia/Kolkata");
+    document.getElementById("autoTag").style.display = (inv===det)?"inline-block":"none";
+
+    var hdrKey=dateKey(dref0,inv);
+    var slots=document.getElementById("slots");slots.innerHTML="";var shown=0;
+    for(var h=hoursStart;h<hoursEnd;h++){
+      [0,30].forEach(function(mm){
+        var inst=wallToInstant(DATE.y,DATE.m,DATE.d,h,mm,host);
+        var ih=(+new Intl.DateTimeFormat("en-US",{timeZone:inv,hour:"numeric",hour12:false}).format(inst))%24;
+        if(ih<6||ih>21) return;                         // don't offer the invitee the dead of night
+        shown++;
+        var crosses=dateKey(inst,inv)!==hdrKey;
+        var el=document.createElement("button");el.className="slot";
+        el.innerHTML='<div class="big">'+fmt(inst,inv)
+                    +(crosses?'<span class="nd">'+fmt(inst,inv,{weekday:"short",month:"short",day:"numeric",hour:undefined,minute:undefined})+'</span>':'')
+                    +'</div><div class="sub">Maya · '+fmt(inst,host)+'</div>';
+        el.onclick=function(){book(inst);};
+        slots.appendChild(el);
+      });
+    }
+    if(!shown) slots.innerHTML='<div class="empty">No comfortable overlap on this day — Maya\'s hours fall in your night. Try another timezone above.</div>';
+    document.getElementById("dayLabel").textContent=fmt(dref0,inv,{weekday:"long",day:"numeric",month:"long",year:"numeric",hour:undefined,minute:undefined});
+    document.getElementById("hint").innerHTML = (inv===host)
+      ? "All times are in your timezone. Switch it above and every slot re-converts instantly."
+      : "Shown in <b>your</b> time; “Maya ·” is the same moment in hers. Only times that land in your daytime are offered.";
+    renderDst();
+  }
+
+  function book(inst){
+    document.getElementById("picker").style.display="none";
+    var c=document.getElementById("confirm");c.classList.add("show");
+    var end=new Date(inst.getTime()+DUR*60000);
+    var rc=document.getElementById("rcpt");
+    rc.innerHTML=
+      '<div class="r hi"><span>Your time ('+label(inv)+')</span><b>'+fmt(inst,inv,{weekday:"short",day:"numeric",month:"short"})+', '+fmt(inst,inv)+' – '+fmt(end,inv)+' '+zoneName(inst,inv)+'</b></div>'+
+      '<div class="r"><span>Maya\'s time ('+label(host)+')</span><b>'+fmt(inst,host,{weekday:"short",day:"numeric",month:"short"})+', '+fmt(inst,host)+' – '+fmt(end,host)+' '+zoneName(inst,host)+'</b></div>'+
+      '<div class="r"><span>The exact moment (UTC)</span><b>'+fmt(inst,"UTC",{weekday:"short",day:"numeric",month:"short"})+', '+fmt(inst,"UTC")+' UTC</b></div>';
+    document.getElementById("confSub").textContent="Same moment for both of you — and it won't shift when the clocks change.";
+  }
+  document.getElementById("again").onclick=function(){
+    document.getElementById("confirm").classList.remove("show");
+    document.getElementById("picker").style.display="block";render();
+  };
+
+  // ---- DST proof (shown in Maya's own New York time, where the "move" is felt) ----
+  function renderDst(){
+    var NY="America/New_York";
+    var cmp=document.getElementById("cmp");
+    var before={y:2026,m:10,d:26}, after={y:2026,m:11,d:9};   // Mondays either side of 2 Nov 2026
+    // GOOD: anchor 10:00 America/New_York each week
+    function good(dt){return wallToInstant(dt.y,dt.m,dt.d,10,0,NY);}
+    // BAD: freeze the UTC offset captured when the series was created (late Oct, EDT), reuse it after DST
+    var frozenOff=tzOffsetMin(good(before),NY);               // -240 (EDT)
+    function bad(dt){return new Date(Date.UTC(dt.y,dt.m-1,dt.d,10,0) - frozenOff*60000);}
+    var gB=good(before), gA=good(after), bB=bad(before), bA=bad(after);
+    var badMoved = fmt(bB,NY)!==fmt(bA,NY);
+    cmp.innerHTML=
+      '<div class="way bad"><div class="wh">✗ Old way — stored as a clock reading</div><div class="wb">'+
+        '<div class="wrow"><span class="d">Mon 26 Oct</span><span class="t ok">'+fmt(bB,NY)+' '+zoneName(bB,NY)+'</span></div>'+
+        '<div class="wrow"><span class="d">Mon 9 Nov · after DST</span><span class="t '+(badMoved?'shift':'ok')+'">'+fmt(bA,NY)+' '+zoneName(bA,NY)+'</span></div>'+
+        '<div class="verdict"><b>Maya set 10:00 AM — it silently became 9:00 AM</b> after the clocks changed. Nobody touched it. This is the ticket.</div>'+
+      '</div></div>'+
+      '<div class="way good"><div class="wh">✓ New way — anchored to the moment + zone</div><div class="wb">'+
+        '<div class="wrow"><span class="d">Mon 26 Oct</span><span class="t ok">'+fmt(gB,NY)+' '+zoneName(gB,NY)+'</span></div>'+
+        '<div class="wrow"><span class="d">Mon 9 Nov · after DST</span><span class="t ok">'+fmt(gA,NY)+' '+zoneName(gA,NY)+'</span></div>'+
+        '<div class="verdict"><b>Still 10:00 AM in New York</b> — and still '+fmt(gA,inv)+' '+zoneName(gA,inv)+' for your invitee in '+label(inv)+'. Anchored to the zone, it can\'t drift.</div>'+
+      '</div></div>';
+  }
+
+  // ---- meeting audit (check existing meetings) ----
+  var MEETINGS=[
+    {title:"Weekly partner sync", acct:"Marlow Legal", host:"America/New_York", inv:"Europe/London", y:2026,m:11,d:9, hh:10,mm:0, stored:"frozen"},
+    {title:"Product demo",        acct:"Fennick Studio", host:"America/New_York", inv:"Europe/Berlin", y:2026,m:12,d:1, hh:15,mm:0, stored:"no_zone"},
+    {title:"Renewal review",      acct:"Juniper Labs",  host:"America/New_York", inv:"America/Los_Angeles", y:2026,m:11,d:16, hh:13,mm:0, stored:"frozen"},
+    {title:"Exec onboarding",     acct:"Corvane Partners", host:"America/New_York", inv:"Europe/London", y:2026,m:12,d:7, hh:11,mm:0, stored:"anchored"}
+  ];
+  window.__fixMeeting=function(i){MEETINGS[i].stored="anchored";MEETINGS[i].fixed=true;renderCheck();};
+  function audit(m){
+    var correct=wallToInstant(m.y,m.m,m.d,m.hh,m.mm,m.host);
+    if(m.stored==="anchored")
+      return {ok:true,correct:correct,reason:"Anchored to "+label(m.host)+". The same moment for everyone — survives daylight-saving changes."};
+    if(m.stored==="no_zone")
+      return {ok:false,correct:correct,reason:"<b>No timezone saved.</b> Your invitee in "+label(m.inv)+" could read "+fmt(correct,m.host).replace(/\s?[AP]M/,'')+" on their own clock and join at the wrong hour."};
+    // frozen: offset captured in Oct (EDT); wrong after the Nov 2 DST change
+    var frozenOff=tzOffsetMin(wallToInstant(2026,10,15,m.hh,m.mm,m.host),m.host);
+    var wrong=new Date(Date.UTC(m.y,m.m-1,m.d,m.hh,m.mm)-frozenOff*60000);
+    if(fmt(wrong,m.host)!==fmt(correct,m.host))
+      return {ok:false,correct:correct,reason:"<b>Stored as a clock reading.</b> After daylight saving it shows <b>"+fmt(wrong,m.host)+" "+zoneName(wrong,m.host)+"</b> to the host instead of "+fmt(correct,m.host)+" — a one-hour drift."};
+    return {ok:true,correct:correct,reason:"Stored as a clock reading, but no daylight-saving change falls before this date — currently fine."};
+  }
+  function renderCheck(){
+    var list=document.getElementById("checkList"); list.innerHTML="";
+    var warn=0;
+    MEETINGS.forEach(function(m,i){
+      var a=audit(m), end=new Date(a.correct.getTime()+DUR*60000);
+      if(!a.ok) warn++;
+      var times=fmt(a.correct,m.host)+" "+zoneName(a.correct,m.host)+" <span style='color:var(--muted)'>· "+fmt(a.correct,m.inv)+" "+zoneName(a.correct,m.inv)+" for "+label(m.inv)+"</span>";
+      var row=document.createElement("div");
+      row.className="mrow "+(a.ok?"ok":"warn");
+      row.innerHTML=
+        '<span class="st">'+(a.ok?'✓ Safe':'⚠ At risk')+'</span>'+
+        '<div class="info"><div class="ttl">'+m.title+' · '+m.acct+'</div>'+
+          '<div class="meta">'+fmt(a.correct,m.host,{weekday:"short",day:"numeric",month:"short",hour:undefined,minute:undefined})+' · should be '+times+'</div>'+
+          '<div class="reason">'+a.reason+'</div></div>'+
+        '<div class="act">'+(a.ok?(m.fixed?'<span class="done">✓ Re-anchored</span>':''):'<button class="fix" onclick="__fixMeeting('+i+')">Re-anchor</button>')+'</div>';
+      list.appendChild(row);
+    });
+    var bar=document.getElementById("checkBar");
+    bar.innerHTML = warn
+      ? '<span class="n warn">'+warn+'</span><span>meeting'+(warn>1?'s':'')+' need re-anchoring before they drift</span>'
+      : '<span class="n ok">✓ All clear</span><span>every meeting is anchored and daylight-saving safe</span>';
+  }
+
+  render(); renderCheck();
+})();
+</script>
+</body>
+</html>
