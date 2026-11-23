@@ -68,6 +68,7 @@
   .tzbar .side b{color:var(--ink);font-weight:700}
   .tzbar .swap{color:var(--muted);font-size:15px;margin:0 -2px}
   .tzsel{width:auto;min-width:148px;padding:7px 30px 7px 11px;font-size:13px;font-weight:600;color:var(--indigo-ink);background-color:#fff}
+  .tzval{color:var(--indigo-ink);font-weight:700;font-size:13.5px}
   .tzbar .auto{font:700 9.5px Inter;letter-spacing:.05em;text-transform:uppercase;color:var(--teal-ink);background:var(--teal-soft);border:1px solid #BFE9E2;padding:3px 7px;border-radius:999px}
   .daynav{font-weight:700;font-size:15px;margin:2px 0 14px}
   .empty{padding:22px 14px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--line);border-radius:12px}
@@ -230,7 +231,7 @@
         </div>
         <div class="tzbar">
           <div class="side"><span class="mut">You're booking in</span>
-            <select id="invTz" class="tzsel"></select>
+            <b id="invTzLabel" class="tzval">—</b>
             <span class="auto" id="autoTag">auto-detected</span>
           </div>
           <span class="swap" aria-hidden="true">↔</span>
@@ -354,9 +355,7 @@
       if(z[0]===val)o.selected=true;sel.appendChild(o);
     });
   }
-  var invSel=document.getElementById("invTz");          // host zone is a fixed account setting; only the invitee's zone is interactive
-  fill(invSel,inv);
-  invSel.onchange=function(){inv=this.value;render();};
+  // invitee zone is auto-detected and read-only; host zone is a fixed account setting — nothing on this screen is editable
   document.getElementById("hours").onchange=function(){var p=this.value.split("-");hoursStart=+p[0];hoursEnd=+p[1];render();};
 
   // ---- render booking page ----
@@ -365,6 +364,7 @@
     // one place for timezone context: the bar
     document.getElementById("hostZoneLabel").textContent=label(host)+" · "+zoneName(dref0,host);
     document.getElementById("hostSetVal").textContent=label(host)+" · "+zoneName(dref0,host);
+    document.getElementById("invTzLabel").textContent=label(inv)+" · "+zoneName(dref0,inv);
     var det=(Intl.DateTimeFormat().resolvedOptions().timeZone||"").replace("Asia/Calcutta","Asia/Kolkata");
     document.getElementById("autoTag").style.display = (inv===det)?"inline-block":"none";
 
